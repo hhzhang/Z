@@ -1,0 +1,628 @@
+<html><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Javascript Math.SQRT2</title>
+    <meta name="keywords" content="api,html,dom,css,javascript,js,ror" />
+    <meta name="description" content="" />
+
+    <link rel="shortcut icon" href="../favicon.ico" tppabs="http://www.qefqei.com/favicon.ico" type="image/x-icon"/>
+    <link rel="bookmark" href="../favicon.ico" tppabs="http://www.qefqei.com/favicon.ico" type="image/x-icon"/>
+    <link rel="icon" href="../favicon.ico" tppabs="http://www.qefqei.com/favicon.ico" type="image/x-icon"/>
+
+    <link href="../stylesheets/api.css-1299600847" tppabs="http://www.qefqei.com/stylesheets/api.css?1299600847" media="screen" rel="stylesheet" type="text/css" />
+    <!--[if lt IE 6]><link href="/stylesheets/ie7.css?1299600847" media="screen" rel="stylesheet" type="text/css" /><![endif]-->
+    <!--[if lt IE 7]><link href="/stylesheets/ie6.css?1299600847" media="screen" rel="stylesheet" type="text/css" /><![endif]-->
+
+    <script src="../javascripts/jquery-1.3.2.min.js-1299600847" tppabs="http://www.qefqei.com/javascripts/jquery-1.3.2.min.js?1299600847" type="text/javascript"></script>
+<script src="../javascripts/common.js-1299600847" tppabs="http://www.qefqei.com/javascripts/common.js?1299600847" type="text/javascript"></script>
+<script src="../javascripts/application.js-1299600847" tppabs="http://www.qefqei.com/javascripts/application.js?1299600847" type="text/javascript"></script>
+
+    
+  <script type="text/javascript">
+    $(document).ready(function(){
+
+      /*设置tips*/
+      $('.tip').tip();
+
+      /*设置API列表高度*/
+      setListHeight();
+
+      /*打印*/
+      $("#apiPrint").click(function(){
+        $("#apiContent").printArea();
+      });
+
+      var apiCache = {};
+      var listCache = {};
+      var linkCache = {};
+      var listArray = [];
+      
+      $("#apiList ul li a").each(function(){
+        var name = $(this).text();
+        var desc = $(this).attr('tip');
+        apiCache[name] = desc;   //数据缓存
+        linkCache[name] = $(this).attr('href');
+        listArray.push(name.toLowerCase());   //将name键名转小写后添加到数组
+        listCache[name.toLowerCase()] = name;  //并设置name为listCache的K,值仍为原型的i及字段中的原生name
+      });
+      listArray.sort(); //将列表name数组排序(重要)
+
+      /**
+       * 快速查找
+       */
+      var quickInto = function(){
+        var searchList = $('<div class="searchList"></div>'); //结果列表
+        var input = $("#search input"); //快速搜索输入框
+        input.focus(function(){ showSearchList(); })
+        input.click(function(event){ event.stopPropagation(); });
+        input.keyup(function(e){
+          keyCode = e.keyCode;
+          if (keyCode != 38 && keyCode != 40) {
+            showSearchList();
+          }
+        });
+
+        /**显示快速搜列表*/
+        var showSearchList = function(){
+          searchList.empty(); //先清空结果列表中的内容
+          $("#searchListShadow").remove();
+          var sname = $.trim(input.val().toLowerCase()); //输入框中的值(去左右空格)
+          input.val($.trim(input.val())); //重新设置输入框中的值
+          if (sname.isEmpty()) { //如果输入框没有内容
+            searchList.remove(); //移除结果列表
+            $("#searchListShadow").remove(); //移除结果列表下的阴影
+            return;
+          }
+
+          /**for循环设置结果列表中的内容*/
+          for (var i = 0; i < listArray.length; i++) {
+            var item = listArray[i];
+            var index = item.indexOf(sname); //输入值在item的索引值
+            if (index > -1) {
+              var name = listCache[item]; //name示例条目
+              var str1 = name.slice(0, index);
+              var str2 = name.slice(index, (index + sname.length)).fontcolor("#000099").bold(); //将匹配到的字符串,设置#009号蓝色并加粗
+              var str3 = name.slice((index + sname.length));
+              name = str1 + str2 + str3;
+              searchList.append('<a><span>' + name + "</span>&nbsp;:&nbsp;" + $.trim(apiCache[listCache[item]]).toString() + '</a>');
+            }
+          }
+
+          /**给匹配的记录注册点击事件*/
+          searchList.children("a").click(function(){
+            window.location = linkCache[$(this).find('span').text()];
+          });
+
+          searchList.children("a").hover( function(){$(this).addClass("bFF9");}, function(){$(this).removeClass("bFF9");} );
+
+          /**如果存在匹配条目,则显示搜索列表,否则将其移除*/
+          if ((searchList.children().length) > 0) {
+            searchList.css({ top:(input.offset().top+input.outerHeight()+1), left:input.offset().left });
+            $("body").append(searchList);
+            var shadow = $('<div id="searchListShadow" class="shadow"></div>');
+            shadow.css({ width:searchList.outerWidth()-10, height:searchList.outerHeight()+6, top:searchList.offset().top, left:searchList.offset().left, "z-index":998 });
+            shadow.append('<div class="shadowl"></div><div class="shadowb" style="width:'+(searchList.outerWidth()-14)+'px"></div><div class="shadowhr"><div class="t"></div><div class="m" style="height:'+(searchList.outerHeight()-10)+'px";></div><div class="b"></div></div>');
+            shadow.children("div").height(searchList.outerHeight() + 6);
+            $("body").append(shadow);
+          }else {
+            searchList.remove(); //移除结果列表
+            $("#searchListShadow").remove(); //移除结果列表下的阴影
+          }
+
+        }
+
+        /**上下键选择搜索列表中的项*/
+        var selectSearchListItem = function(){
+
+          $(document).click(function(){
+            if ($(".searchList").length) {
+              $(".searchList").remove();
+              $("#searchListShadow").remove();
+            }
+          });
+
+          $(document).bind('keydown', 'up', function(evt){ updown("up"); return false; });
+          $(document).bind('keydown', 'down', function(evt){ updown("down"); return false; });
+
+          $(input).bind('keydown', 'return', function(evt){
+            var inputval = input.val().toLowerCase();
+            if(listCache[inputval]){
+              input.val(listCache[inputval]);
+              window.location = linkCache[listCache[inputval]];
+            }else{
+              if (searchList.children("a").length > 0) {
+                var name = searchList.find("a:first span").text();
+                input.val(name);
+                window.location = linkCache[ name ];
+              }
+              return false;
+            }
+          });
+
+          function updown(e){
+            if ( searchList.children().length > 0) {
+              var currentItem = null;
+              if(e=="up"){
+                if (searchList.children("a.bFF9").length > 0) {
+                  currentItem = searchList.children("a.bFF9").removeClass("bFF9").prev();
+                }else{
+                  currentItem = searchList.children("a:last");
+                }
+              }else if(e=="down"){
+                if (searchList.children("a.bFF9").length > 0) {
+                  currentItem = searchList.children("a.bFF9").removeClass("bFF9").next();
+                }else{
+                  currentItem = searchList.children("a:first");
+                }
+              }
+              input.val(currentItem.addClass('bFF9').children("span").text());
+            }
+          }
+        }
+        selectSearchListItem();
+      }
+
+      quickInto();
+      
+    });
+
+  </script>
+
+  </head>
+
+  <body>
+    <div id="container">
+
+      <div id="header">
+        <div id="logo"><a href="../index.htm" tppabs="http://www.qefqei.com/"><img alt="Qefqei.com API" height="45" src="../images/logo_qefqei.gif-1299600847.gif" tppabs="http://www.qefqei.com/images/logo_qefqei.gif?1299600847" title="Qefqei.com API" width="200" /></a></div> <!-- /logo -->
+      </div>
+
+        
+
+<div id="leftbar">
+
+  <div class="box greenbox" id="search">
+    <div class="top">
+      <span class="lt"></span><span class="tit"></span><span class="rt"></span>
+    </div>
+    <div class="con">
+      <div class="rcw"><span class="rclt"></span><span class="rcrt"></span><div class="rcm"></div></div>
+      <div class="content">
+        <input type="text" />
+      </div>
+      <div class="rcw"><span class="rclb"></span><span class="rcrb"></span><div class="rcm"></div></div>
+    </div>
+    <div class="bot"><span class="lb"></span><span class="rb"></span></div>
+  </div>
+
+  <div class="box bluebox">
+    <div class="top">
+      <span class="lt"></span><span class="tit">API目录</span><span class="rt"></span>
+    </div>
+    <div class="con">
+      <!--<div class="rcw"><span class="rclt"></span><span class="rcrt"></span><div class="rcm"></div></div>-->
+      <div class="content apiListWrap">
+        <div id="apiList">
+          <ul>
+              <li><a href="Arguments.htm" tppabs="http://www.qefqei.com/javascript/Arguments" class="tip" tip="一个函数的参数和其他属性"><span class="name">Arguments</span></a></li>
+              <li><a href="Arguments-callee.htm" tppabs="http://www.qefqei.com/javascript/Arguments-callee" class="tip" tip="当前正在运行的函数"><span class="name">Arguments.callee</span></a></li>
+              <li><a href="Arguments-length.htm" tppabs="http://www.qefqei.com/javascript/Arguments-length" class="tip" tip="传递给函数的参数个数"><span class="name">Arguments.length</span></a></li>
+              <li><a href="arguments[].htm" tppabs="http://www.qefqei.com/javascript/arguments%5B%5D" class="tip" tip="函数参数的数组"><span class="name">arguments[]</span></a></li>
+              <li><a href="Array.htm" tppabs="http://www.qefqei.com/javascript/Array" class="tip" tip="对数组的内部支持"><span class="name">Array</span></a></li>
+              <li><a href="Array-concat().htm" tppabs="http://www.qefqei.com/javascript/Array-concat()" class="tip" tip="连接数组"><span class="name">Array.concat()</span></a></li>
+              <li><a href="Array-join().htm" tppabs="http://www.qefqei.com/javascript/Array-join()" class="tip" tip="将数组元素连接起来以构建一个字符串"><span class="name">Array.join()</span></a></li>
+              <li><a href="Array-length.htm" tppabs="http://www.qefqei.com/javascript/Array-length" class="tip" tip="数组的大小"><span class="name">Array.length</span></a></li>
+              <li><a href="Array-pop().htm" tppabs="http://www.qefqei.com/javascript/Array-pop()" class="tip" tip="删除并返回数组的最后一个元素"><span class="name">Array.pop()</span></a></li>
+              <li><a href="Array-push().htm" tppabs="http://www.qefqei.com/javascript/Array-push()" class="tip" tip="给数组添加元素"><span class="name">Array.push()</span></a></li>
+              <li><a href="Array-reverse().htm" tppabs="http://www.qefqei.com/javascript/Array-reverse()" class="tip" tip="颠倒数组中的元素顺序"><span class="name">Array.reverse()</span></a></li>
+              <li><a href="Array-shift().htm" tppabs="http://www.qefqei.com/javascript/Array-shift()" class="tip" tip="将数组头部的元素移出数组头部"><span class="name">Array.shift()</span></a></li>
+              <li><a href="Array-slice().htm" tppabs="http://www.qefqei.com/javascript/Array-slice()" class="tip" tip="返回数组的一个子数组"><span class="name">Array.slice()</span></a></li>
+              <li><a href="Array-sort().htm" tppabs="http://www.qefqei.com/javascript/Array-sort()" class="tip" tip="在原数组上对数组元素进行排序"><span class="name">Array.sort()</span></a></li>
+              <li><a href="Array-splice().htm" tppabs="http://www.qefqei.com/javascript/Array-splice()" class="tip" tip="插入、删除或替换一个数组元素"><span class="name">Array.splice()</span></a></li>
+              <li><a href="Array-toLocaleString().htm" tppabs="http://www.qefqei.com/javascript/Array-toLocaleString()" class="tip" tip="把数组转换成一个局部字符串"><span class="name">Array.toLocaleString()</span></a></li>
+              <li><a href="Array-toString().htm" tppabs="http://www.qefqei.com/javascript/Array-toString()" class="tip" tip="把数组转换成一个字符串"><span class="name">Array.toString()</span></a></li>
+              <li><a href="Array-unshift().htm" tppabs="http://www.qefqei.com/javascript/Array-unshift()" class="tip" tip="在数组的头部插入一个元素"><span class="name">Array.unshift()</span></a></li>
+              <li><a href="Boolean.htm" tppabs="http://www.qefqei.com/javascript/Boolean" class="tip" tip="对布尔值的支持"><span class="name">Boolean</span></a></li>
+              <li><a href="Boolean-toString().htm" tppabs="http://www.qefqei.com/javascript/Boolean-toString()" class="tip" tip="将布尔值转换成字符串"><span class="name">Boolean.toString()</span></a></li>
+              <li><a href="Boolean-valueOf().htm" tppabs="http://www.qefqei.com/javascript/Boolean-valueOf()" class="tip" tip="Boolean对象的布尔值"><span class="name">Boolean.valueOf()</span></a></li>
+              <li><a href="Date.htm" tppabs="http://www.qefqei.com/javascript/Date" class="tip" tip="操作日期和时间的对象"><span class="name">Date</span></a></li>
+              <li><a href="Date-getDate().htm" tppabs="http://www.qefqei.com/javascript/Date-getDate()" class="tip" tip="返回日期的一个月中的某一天的字段"><span class="name">Date.getDate()</span></a></li>
+              <li><a href="Date-getDay().htm" tppabs="http://www.qefqei.com/javascript/Date-getDay()" class="tip" tip="返回日期的一周中的某一天字段"><span class="name">Date.getDay()</span></a></li>
+              <li><a href="Date-getFullYear().htm" tppabs="http://www.qefqei.com/javascript/Date-getFullYear()" class="tip" tip="返回年份"><span class="name">Date.getFullYear()</span></a></li>
+              <li><a href="Date-getHours().htm" tppabs="http://www.qefqei.com/javascript/Date-getHours()" class="tip" tip="返回Date对象的小时字段"><span class="name">Date.getHours()</span></a></li>
+              <li><a href="javascript:if(confirm('http://www.qefqei.com/javascript/Date-getMilliseconds()  \n\n�ļ���δ�� Teleport Pro ȡ�أ���Ϊ ���޷�ȡ�ã�������ȡ�غ������������Ŀֹͣ��̫�졣  \n\n��Ҫ�ӷ������ϴ�����'))window.location='http://www.qefqei.com/javascript/Date-getMilliseconds()'" tppabs="http://www.qefqei.com/javascript/Date-getMilliseconds()" class="tip" tip="返回Date对象的毫秒字段"><span class="name">Date.getMilliseconds()</span></a></li>
+              <li><a href="javascript:if(confirm('http://www.qefqei.com/javascript/Date-getMinutes()  \n\n�ļ���δ�� Teleport Pro ȡ�أ���Ϊ ���޷�ȡ�ã�������ȡ�غ������������Ŀֹͣ��̫�졣  \n\n��Ҫ�ӷ������ϴ�����'))window.location='http://www.qefqei.com/javascript/Date-getMinutes()'" tppabs="http://www.qefqei.com/javascript/Date-getMinutes()" class="tip" tip="返回Date对象的分钟字段"><span class="name">Date.getMinutes()</span></a></li>
+              <li><a href="javascript:if(confirm('http://www.qefqei.com/javascript/Date-getMonth()  \n\n�ļ���δ�� Teleport Pro ȡ�أ���Ϊ ���޷�ȡ�ã�������ȡ�غ������������Ŀֹͣ��̫�졣  \n\n��Ҫ�ӷ������ϴ�����'))window.location='http://www.qefqei.com/javascript/Date-getMonth()'" tppabs="http://www.qefqei.com/javascript/Date-getMonth()" class="tip" tip="返回Date对象的月份字段"><span class="name">Date.getMonth()</span></a></li>
+              <li><a href="Date-getSeconds().htm" tppabs="http://www.qefqei.com/javascript/Date-getSeconds()" class="tip" tip="返回Date对象的秒字段"><span class="name">Date.getSeconds()</span></a></li>
+              <li><a href="Date-getTime().htm" tppabs="http://www.qefqei.com/javascript/Date-getTime()" class="tip" tip="返回Date对象的毫秒表示"><span class="name">Date.getTime()</span></a></li>
+              <li><a href="Date-getTimezoneOffset().htm" tppabs="http://www.qefqei.com/javascript/Date-getTimezoneOffset()" class="tip" tip="判断与GMT的时间差"><span class="name">Date.getTimezoneOffset()</span></a></li>
+              <li><a href="Date-getUTCDate().htm" tppabs="http://www.qefqei.com/javascript/Date-getUTCDate()" class="tip" tip="返回该天是一个月的哪一天（世界时）"><span class="name">Date.getUTCDate()</span></a></li>
+              <li><a href="Date-getUTCDay().htm" tppabs="http://www.qefqei.com/javascript/Date-getUTCDay()" class="tip" tip="返回该天是星期几（世界时）"><span class="name">Date.getUTCDay()</span></a></li>
+              <li><a href="Date-getUTCFullYear().htm" tppabs="http://www.qefqei.com/javascript/Date-getUTCFullYear()" class="tip" tip="返回年份（世界时）"><span class="name">Date.getUTCFullYear()</span></a></li>
+              <li><a href="Date-getUTCHours().htm" tppabs="http://www.qefqei.com/javascript/Date-getUTCHours()" class="tip" tip="返回Date对象的小时字段（世界时）"><span class="name">Date.getUTCHours()</span></a></li>
+              <li><a href="Date-getUTCMilliseconds().htm" tppabs="http://www.qefqei.com/javascript/Date-getUTCMilliseconds()" class="tip" tip="返回Date对象的毫秒字段（世界时）"><span class="name">Date.getUTCMilliseconds()</span></a></li>
+              <li><a href="Date-getUTCMinutes().htm" tppabs="http://www.qefqei.com/javascript/Date-getUTCMinutes()" class="tip" tip="返回Date对象的分钟字段（世界时）"><span class="name">Date.getUTCMinutes()</span></a></li>
+              <li><a href="Date-getUTCMonth().htm" tppabs="http://www.qefqei.com/javascript/Date-getUTCMonth()" class="tip" tip="返回Date对象的月份（世界时）"><span class="name">Date.getUTCMonth()</span></a></li>
+              <li><a href="Date-getUTCSeconds().htm" tppabs="http://www.qefqei.com/javascript/Date-getUTCSeconds()" class="tip" tip="返回Date对象的秒字段（世界时）"><span class="name">Date.getUTCSeconds()</span></a></li>
+              <li><a href="Date-getYear().htm" tppabs="http://www.qefqei.com/javascript/Date-getYear()" class="tip" tip="返回Date对象的年份字段（世界时）"><span class="name">Date.getYear()</span></a></li>
+              <li><a href="Date-parse().htm" tppabs="http://www.qefqei.com/javascript/Date-parse()" class="tip" tip="解析日期/时间字符串"><span class="name">Date.parse()</span></a></li>
+              <li><a href="Date-setDate().htm" tppabs="http://www.qefqei.com/javascript/Date-setDate()" class="tip" tip="设置一个月的某一天"><span class="name">Date.setDate()</span></a></li>
+              <li><a href="Date-setFullYear().htm" tppabs="http://www.qefqei.com/javascript/Date-setFullYear()" class="tip" tip="设置年份，也可以设置月份和天"><span class="name">Date.setFullYear()</span></a></li>
+              <li><a href="Date-setHousr().htm" tppabs="http://www.qefqei.com/javascript/Date-setHousr()" class="tip" tip="设置Date对象的小时字段、分钟字段、秒字段和毫秒字段"><span class="name">Date.setHousr()</span></a></li>
+              <li><a href="Date-setMilliseconds().htm" tppabs="http://www.qefqei.com/javascript/Date-setMilliseconds()" class="tip" tip="设置Date对象的毫秒字段"><span class="name">Date.setMilliseconds()</span></a></li>
+              <li><a href="Date-setMinutes().htm" tppabs="http://www.qefqei.com/javascript/Date-setMinutes()" class="tip" tip="设置Date对象的分钟字段和秒字段"><span class="name">Date.setMinutes()</span></a></li>
+              <li><a href="Date-setMonth().htm" tppabs="http://www.qefqei.com/javascript/Date-setMonth()" class="tip" tip="设置Date对象的月份字段和天字段"><span class="name">Date.setMonth()</span></a></li>
+              <li><a href="Date-setSeconds().htm" tppabs="http://www.qefqei.com/javascript/Date-setSeconds()" class="tip" tip="设置Date对象的秒字段和毫秒字段"><span class="name">Date.setSeconds()</span></a></li>
+              <li><a href="Date-setTime().htm" tppabs="http://www.qefqei.com/javascript/Date-setTime()" class="tip" tip="以毫秒设置Date对象"><span class="name">Date.setTime()</span></a></li>
+              <li><a href="Date-setUTCDate().htm" tppabs="http://www.qefqei.com/javascript/Date-setUTCDate()" class="tip" tip="设置一个月中的某一天（世界时）"><span class="name">Date.setUTCDate()</span></a></li>
+              <li><a href="Date-setUTCFullYear().htm" tppabs="http://www.qefqei.com/javascript/Date-setUTCFullYear()" class="tip" tip="设置年份、月份和天（世界时）"><span class="name">Date.setUTCFullYear()</span></a></li>
+              <li><a href="Date-setUTCHours().htm" tppabs="http://www.qefqei.com/javascript/Date-setUTCHours()" class="tip" tip="设置Date对象的小时字段、分钟字段、秒字段和毫秒字段（世界时）"><span class="name">Date.setUTCHours()</span></a></li>
+              <li><a href="Date-setUTCMilliseconds().htm" tppabs="http://www.qefqei.com/javascript/Date-setUTCMilliseconds()" class="tip" tip="设置Date对象的毫秒字段（世界时）"><span class="name">Date.setUTCMilliseconds()</span></a></li>
+              <li><a href="Date-setUTCMinutes().htm" tppabs="http://www.qefqei.com/javascript/Date-setUTCMinutes()" class="tip" tip="设置Date对象的分钟字段、秒字段和毫秒字段（世界时）"><span class="name">Date.setUTCMinutes()</span></a></li>
+              <li><a href="Date-setUTCMonth().htm" tppabs="http://www.qefqei.com/javascript/Date-setUTCMonth()" class="tip" tip="设置Date对象的月份字段和天数字段（世界时）"><span class="name">Date.setUTCMonth()</span></a></li>
+              <li><a href="Date-setUTCSeconds().htm" tppabs="http://www.qefqei.com/javascript/Date-setUTCSeconds()" class="tip" tip="设置Date对象的秒字段和毫秒字段（世界时）"><span class="name">Date.setUTCSeconds()</span></a></li>
+              <li><a href="Date-setUTCYear().htm" tppabs="http://www.qefqei.com/javascript/Date-setUTCYear()" class="tip" tip="设置Date对象的年份字段"><span class="name">Date.setUTCYear()</span></a></li>
+              <li><a href="Date-toDateString().htm" tppabs="http://www.qefqei.com/javascript/Date-toDateString()" class="tip" tip="返回Date对象日期部分作为字符串"><span class="name">Date.toDateString()</span></a></li>
+              <li><a href="Date-toGMTString().htm" tppabs="http://www.qefqei.com/javascript/Date-toGMTString()" class="tip" tip="将Date转换为世界时字符串"><span class="name">Date.toGMTString()</span></a></li>
+              <li><a href="Date-toLocaleDateString().htm" tppabs="http://www.qefqei.com/javascript/Date-toLocaleDateString()" class="tip" tip="返回Date对象的日期部分作为本地已格式化的字符串"><span class="name">Date.toLocaleDateString()</span></a></li>
+              <li><a href="Date-toLocaleString().htm" tppabs="http://www.qefqei.com/javascript/Date-toLocaleString()" class="tip" tip="将Date转换为本地已格式化的字符串"><span class="name">Date.toLocaleString()</span></a></li>
+              <li><a href="Date-toLocaleTimeString().htm" tppabs="http://www.qefqei.com/javascript/Date-toLocaleTimeString()" class="tip" tip="返回Date对象的时间部分作为本地已格式化的字符串"><span class="name">Date.toLocaleTimeString()</span></a></li>
+              <li><a href="Date-toString().htm" tppabs="http://www.qefqei.com/javascript/Date-toString()" class="tip" tip="将Date转换为字符串"><span class="name">Date.toString()</span></a></li>
+              <li><a href="Date-toTimeString().htm" tppabs="http://www.qefqei.com/javascript/Date-toTimeString()" class="tip" tip="返回Date对象日期部分作为字符串"><span class="name">Date.toTimeString()</span></a></li>
+              <li><a href="Date-toUTCString().htm" tppabs="http://www.qefqei.com/javascript/Date-toUTCString()" class="tip" tip="将Date转换为字符串（世界时）"><span class="name">Date.toUTCString()</span></a></li>
+              <li><a href="Date-UTC().htm" tppabs="http://www.qefqei.com/javascript/Date-UTC()" class="tip" tip="将Date规范转换成毫秒数"><span class="name">Date.UTC()</span></a></li>
+              <li><a href="Date-valueOf().htm" tppabs="http://www.qefqei.com/javascript/Date-valueOf()" class="tip" tip="将Date转换成毫秒表示"><span class="name">Date.valueOf()</span></a></li>
+              <li><a href="decodeURI().htm" tppabs="http://www.qefqei.com/javascript/decodeURI()" class="tip" tip="URI中未转义的字符"><span class="name">decodeURI()</span></a></li>
+              <li><a href="decodeURIComponent().htm" tppabs="http://www.qefqei.com/javascript/decodeURIComponent()" class="tip" tip="URI组件中的未转义字符"><span class="name">decodeURIComponent()</span></a></li>
+              <li><a href="encodeURI().htm" tppabs="http://www.qefqei.com/javascript/encodeURI()" class="tip" tip="URI中的转义字符"><span class="name">encodeURI()</span></a></li>
+              <li><a href="encodeURIComponent().htm" tppabs="http://www.qefqei.com/javascript/encodeURIComponent()" class="tip" tip="转义URI组件中的字符"><span class="name">encodeURIComponent()</span></a></li>
+              <li><a href="Error.htm" tppabs="http://www.qefqei.com/javascript/Error" class="tip" tip="普通异常"><span class="name">Error</span></a></li>
+              <li><a href="Error-message.htm" tppabs="http://www.qefqei.com/javascript/Error-message" class="tip" tip="人们可以读懂的出错消息"><span class="name">Error.message</span></a></li>
+              <li><a href="Error-neme.htm" tppabs="http://www.qefqei.com/javascript/Error-neme" class="tip" tip="错误类型"><span class="name">Error.neme</span></a></li>
+              <li><a href="Error-toString().htm" tppabs="http://www.qefqei.com/javascript/Error-toString()" class="tip" tip="把Error对象转换成字符串"><span class="name">Error.toString()</span></a></li>
+              <li><a href="escape().htm" tppabs="http://www.qefqei.com/javascript/escape()" class="tip" tip="对字符串编码"><span class="name">escape()</span></a></li>
+              <li><a href="eval().htm" tppabs="http://www.qefqei.com/javascript/eval()" class="tip" tip="执行字符串中的JavaScript代码"><span class="name">eval()</span></a></li>
+              <li><a href="EvalError.htm" tppabs="http://www.qefqei.com/javascript/EvalError" class="tip" tip="在不正确使eval()时抛出"><span class="name">EvalError</span></a></li>
+              <li><a href="Function.htm" tppabs="http://www.qefqei.com/javascript/Function" class="tip" tip="JavaScript函数"><span class="name">Function</span></a></li>
+              <li><a href="Function-apply().htm" tppabs="http://www.qefqei.com/javascript/Function-apply()" class="tip" tip="将函数做为一个对象的方法调用"><span class="name">Function.apply()</span></a></li>
+              <li><a href="Function-arguments[].htm" tppabs="http://www.qefqei.com/javascript/Function-arguments%5B%5D" class="tip" tip="传递给函数的参数"><span class="name">Function.arguments[]</span></a></li>
+              <li><a href="Function-call().htm" tppabs="http://www.qefqei.com/javascript/Function-call()" class="tip" tip="将函数作为对象的方法调用"><span class="name">Function.call()</span></a></li>
+              <li><a href="Function-caller.htm" tppabs="http://www.qefqei.com/javascript/Function-caller" class="tip" tip="调用当前函数的函数"><span class="name">Function.caller</span></a></li>
+              <li><a href="Function-length.htm" tppabs="http://www.qefqei.com/javascript/Function-length" class="tip" tip="已声明的参数的个数"><span class="name">Function.length</span></a></li>
+              <li><a href="Function-prototype.htm" tppabs="http://www.qefqei.com/javascript/Function-prototype" class="tip" tip="对象类的原型"><span class="name">Function.prototype</span></a></li>
+              <li><a href="Function-toString().htm" tppabs="http://www.qefqei.com/javascript/Function-toString()" class="tip" tip="把函数转换成字符串"><span class="name">Function.toString()</span></a></li>
+              <li><a href="getClass().htm" tppabs="http://www.qefqei.com/javascript/getClass()" class="tip" tip="返回一个JavaObject的JavaClass"><span class="name">getClass()</span></a></li>
+              <li><a href="Global.htm" tppabs="http://www.qefqei.com/javascript/Global" class="tip" tip="全局对象"><span class="name">Global</span></a></li>
+              <li><a href="ifFinite().htm" tppabs="http://www.qefqei.com/javascript/ifFinite()" class="tip" tip="判断一人数字是否是有限的"><span class="name">ifFinite()</span></a></li>
+              <li><a href="Infinity.htm" tppabs="http://www.qefqei.com/javascript/Infinity" class="tip" tip="表示无穷大的数字属性"><span class="name">Infinity</span></a></li>
+              <li><a href="isNaN().htm" tppabs="http://www.qefqei.com/javascript/isNaN()" class="tip" tip="检测非数字"><span class="name">isNaN()</span></a></li>
+              <li><a href="java.htm" tppabs="http://www.qefqei.com/javascript/java" class="tip" tip="表示java.*包层级的JavaPackage"><span class="name">java</span></a></li>
+              <li><a href="JavaArray.htm" tppabs="http://www.qefqei.com/javascript/JavaArray" class="tip" tip="Java数组的JavaScript表示"><span class="name">JavaArray</span></a></li>
+              <li><a href="JavaClass.htm" tppabs="http://www.qefqei.com/javascript/JavaClass" class="tip" tip="Java类的JavaScript表示"><span class="name">JavaClass</span></a></li>
+              <li><a href="JavaObject.htm" tppabs="http://www.qefqei.com/javascript/JavaObject" class="tip" tip="Java对象的JavaScript表示"><span class="name">JavaObject</span></a></li>
+              <li><a href="JavaPackage.htm" tppabs="http://www.qefqei.com/javascript/JavaPackage" class="tip" tip="Java包的JavaScript表示"><span class="name">JavaPackage</span></a></li>
+              <li><a href="Math.htm" tppabs="http://www.qefqei.com/javascript/Math" class="tip" tip="算术函数和常量"><span class="name">Math</span></a></li>
+              <li><a href="Math-abs().htm" tppabs="http://www.qefqei.com/javascript/Math-abs()" class="tip" tip="计算绝对值"><span class="name">Math.abs()</span></a></li>
+              <li><a href="Math-acos().htm" tppabs="http://www.qefqei.com/javascript/Math-acos()" class="tip" tip="计算反余弦值"><span class="name">Math.acos()</span></a></li>
+              <li><a href="Math-asin().htm" tppabs="http://www.qefqei.com/javascript/Math-asin()" class="tip" tip="计算反正弦值"><span class="name">Math.asin()</span></a></li>
+              <li><a href="Math-atan().htm" tppabs="http://www.qefqei.com/javascript/Math-atan()" class="tip" tip="计算反正切值"><span class="name">Math.atan()</span></a></li>
+              <li><a href="Math-atan2().htm" tppabs="http://www.qefqei.com/javascript/Math-atan2()" class="tip" tip="计算从X轴到一个点的角度"><span class="name">Math.atan2()</span></a></li>
+              <li><a href="Math-ceil().htm" tppabs="http://www.qefqei.com/javascript/Math-ceil()" class="tip" tip="对一个数上舍入"><span class="name">Math.ceil()</span></a></li>
+              <li><a href="Math-cos().htm" tppabs="http://www.qefqei.com/javascript/Math-cos()" class="tip" tip="计算余弦值"><span class="name">Math.cos()</span></a></li>
+              <li><a href="Math-E.htm" tppabs="http://www.qefqei.com/javascript/Math-E" class="tip" tip="算术常量e"><span class="name">Math.E</span></a></li>
+              <li><a href="Math-exp().htm" tppabs="http://www.qefqei.com/javascript/Math-exp()" class="tip" tip="计算e&lt;sup&gt;x&lt;/sup&gt;"><span class="name">Math.exp()</span></a></li>
+              <li><a href="Math-floor().htm" tppabs="http://www.qefqei.com/javascript/Math-floor()" class="tip" tip="对一个数下舍入"><span class="name">Math.floor()</span></a></li>
+              <li><a href="Math-LN10.htm" tppabs="http://www.qefqei.com/javascript/Math-LN10" class="tip" tip="算术常量log&lt;sub&gt;e&lt;/sub&gt;10"><span class="name">Math.LN10</span></a></li>
+              <li><a href="Math-LN2.htm" tppabs="http://www.qefqei.com/javascript/Math-LN2" class="tip" tip="算术常量log&lt;sub&gt;e&lt;/sub&gt;2"><span class="name">Math.LN2</span></a></li>
+              <li><a href="Math-log().htm" tppabs="http://www.qefqei.com/javascript/Math-log()" class="tip" tip="计算一个数的自然对数"><span class="name">Math.log()</span></a></li>
+              <li><a href="Math-LOG10E.htm" tppabs="http://www.qefqei.com/javascript/Math-LOG10E" class="tip" tip="算术常量log&lt;sub&gt;10&lt;/sub&gt;e"><span class="name">Math.LOG10E</span></a></li>
+              <li><a href="Math-LOG2E.htm" tppabs="http://www.qefqei.com/javascript/Math-LOG2E" class="tip" tip="log&lt;sub&gt;2&lt;/sub&gt;e"><span class="name">Math.LOG2E</span></a></li>
+              <li><a href="Math-max().htm" tppabs="http://www.qefqei.com/javascript/Math-max()" class="tip" tip=""><span class="name">Math.max()</span></a></li>
+              <li><a href="Math-min().htm" tppabs="http://www.qefqei.com/javascript/Math-min()" class="tip" tip="返回最小的参数"><span class="name">Math.min()</span></a></li>
+              <li><a href="Math-PI.htm" tppabs="http://www.qefqei.com/javascript/Math-PI" class="tip" tip="算术常量π"><span class="name">Math.PI</span></a></li>
+              <li><a href="Math-pow().htm" tppabs="http://www.qefqei.com/javascript/Math-pow()" class="tip" tip="计算x&lt;sup&gt;y&lt;/sup&gt;"><span class="name">Math.pow()</span></a></li>
+              <li><a href="Math-random().htm" tppabs="http://www.qefqei.com/javascript/Math-random()" class="tip" tip="返回一个伪随机数"><span class="name">Math.random()</span></a></li>
+              <li><a href="Math-round().htm" tppabs="http://www.qefqei.com/javascript/Math-round()" class="tip" tip="舍入到最接近的整数"><span class="name">Math.round()</span></a></li>
+              <li><a href="Math-sin().htm" tppabs="http://www.qefqei.com/javascript/Math-sin()" class="tip" tip="计算正弦值"><span class="name">Math.sin()</span></a></li>
+              <li><a href="Math-sqrt().htm" tppabs="http://www.qefqei.com/javascript/Math-sqrt()" class="tip" tip="计算平方根"><span class="name">Math.sqrt()</span></a></li>
+              <li><a href="Math-SQRT1_2.htm" tppabs="http://www.qefqei.com/javascript/Math-SQRT1_2" class="tip" tip="算术常量1/&lt;img src=&quot;JavaScriptCache/Math_SQRT1_2.gif&quot; width=&quot;14&quot; height=&quot;13&quot;&gt;"><span class="name">Math.SQRT1_2</span></a></li>
+              <li><a href="Math-SQRT2.htm" tppabs="http://www.qefqei.com/javascript/Math-SQRT2" class="tip b" tip="算术常量&lt;img src=&quot;JavaScriptCache/Math_SQRT1_2.gif&quot; width=&quot;14&quot; height=&quot;13&quot;&gt;"><span class="name">Math.SQRT2</span></a></li>
+              <li><a href="Math-tan().htm" tppabs="http://www.qefqei.com/javascript/Math-tan()" class="tip" tip="计算正切值"><span class="name">Math.tan()</span></a></li>
+              <li><a href="NaN.htm" tppabs="http://www.qefqei.com/javascript/NaN" class="tip" tip="非数字属性"><span class="name">NaN</span></a></li>
+              <li><a href="Number.htm" tppabs="http://www.qefqei.com/javascript/Number" class="tip" tip="对数字的支持"><span class="name">Number</span></a></li>
+              <li><a href="Number-MAX_VALUE.htm" tppabs="http://www.qefqei.com/javascript/Number-MAX_VALUE" class="tip" tip="最大的数值"><span class="name">Number.MAX_VALUE</span></a></li>
+              <li><a href="Number-MIN_VALUE.htm" tppabs="http://www.qefqei.com/javascript/Number-MIN_VALUE" class="tip" tip="最小数值"><span class="name">Number.MIN_VALUE</span></a></li>
+              <li><a href="Number-NaN.htm" tppabs="http://www.qefqei.com/javascript/Number-NaN" class="tip" tip="特殊的非数字值"><span class="name">Number.NaN</span></a></li>
+              <li><a href="Number-NEGATIVE_INFINITY.htm" tppabs="http://www.qefqei.com/javascript/Number-NEGATIVE_INFINITY" class="tip" tip="负无穷大"><span class="name">Number.NEGATIVE_INFINITY</span></a></li>
+              <li><a href="Number-POSITIVE_INFINITY.htm" tppabs="http://www.qefqei.com/javascript/Number-POSITIVE_INFINITY" class="tip" tip="正无穷大"><span class="name">Number.POSITIVE_INFINITY</span></a></li>
+              <li><a href="Number-toExponetial().htm" tppabs="http://www.qefqei.com/javascript/Number-toExponetial()" class="tip" tip="用指数计数法格式数字"><span class="name">Number.toExponetial()</span></a></li>
+              <li><a href="Number-toFixed().htm" tppabs="http://www.qefqei.com/javascript/Number-toFixed()" class="tip" tip="采用定点计数法格式数字"><span class="name">Number.toFixed()</span></a></li>
+              <li><a href="Number-toLocaleString().htm" tppabs="http://www.qefqei.com/javascript/Number-toLocaleString()" class="tip" tip="把数字转换成本地格式的字符串"><span class="name">Number.toLocaleString()</span></a></li>
+              <li><a href="Number-toPrecision().htm" tppabs="http://www.qefqei.com/javascript/Number-toPrecision()" class="tip" tip="格式化数字的有效位"><span class="name">Number.toPrecision()</span></a></li>
+              <li><a href="Number-toString().htm" tppabs="http://www.qefqei.com/javascript/Number-toString()" class="tip" tip="将数字转换成字符串"><span class="name">Number.toString()</span></a></li>
+              <li><a href="Number-valueOf().htm" tppabs="http://www.qefqei.com/javascript/Number-valueOf()" class="tip" tip="返回原始数值"><span class="name">Number.valueOf()</span></a></li>
+              <li><a href="Object.htm" tppabs="http://www.qefqei.com/javascript/Object" class="tip" tip="含有所有JavaScript对象的特性的超类"><span class="name">Object</span></a></li>
+              <li><a href="Object-constructor.htm" tppabs="http://www.qefqei.com/javascript/Object-constructor" class="tip" tip="对象的构造函数"><span class="name">Object.constructor</span></a></li>
+              <li><a href="Object-hasOwnProperty().htm" tppabs="http://www.qefqei.com/javascript/Object-hasOwnProperty()" class="tip" tip="检查属性是否被继承"><span class="name">Object.hasOwnProperty()</span></a></li>
+              <li><a href="Object-isPrototypeOf().htm" tppabs="http://www.qefqei.com/javascript/Object-isPrototypeOf()" class="tip" tip="一个对象是否是另一个对象的原型"><span class="name">Object.isPrototypeOf()</span></a></li>
+              <li><a href="Object-propertyIsEnumberable().htm" tppabs="http://www.qefqei.com/javascript/Object-propertyIsEnumberable()" class="tip" tip="是否可以通过for/in循环看到属性"><span class="name">Object.propertyIsEnumberable()</span></a></li>
+              <li><a href="Object-toLocaleString().htm" tppabs="http://www.qefqei.com/javascript/Object-toLocaleString()" class="tip" tip="返回对象的本地字符串表示"><span class="name">Object.toLocaleString()</span></a></li>
+              <li><a href="Object-toString().htm" tppabs="http://www.qefqei.com/javascript/Object-toString()" class="tip" tip="定义一个对象的字符串表示"><span class="name">Object.toString()</span></a></li>
+              <li><a href="Object-valueOf().htm" tppabs="http://www.qefqei.com/javascript/Object-valueOf()" class="tip" tip="指定对象的原始值"><span class="name">Object.valueOf()</span></a></li>
+              <li><a href="Packages.htm" tppabs="http://www.qefqei.com/javascript/Packages" class="tip" tip="根JavaPackage"><span class="name">Packages</span></a></li>
+              <li><a href="parseFloat().htm" tppabs="http://www.qefqei.com/javascript/parseFloat()" class="tip" tip="把字符串转换成数字"><span class="name">parseFloat()</span></a></li>
+              <li><a href="parseInt().htm" tppabs="http://www.qefqei.com/javascript/parseInt()" class="tip" tip="把字符串转换成整数"><span class="name">parseInt()</span></a></li>
+              <li><a href="RangeError.htm" tppabs="http://www.qefqei.com/javascript/RangeError" class="tip" tip="在数字超出合法范围时抛出"><span class="name">RangeError</span></a></li>
+              <li><a href="ReferenceError.htm" tppabs="http://www.qefqei.com/javascript/ReferenceError" class="tip" tip="在读取不存在的变量时抛出"><span class="name">ReferenceError</span></a></li>
+              <li><a href="RegExp.htm" tppabs="http://www.qefqei.com/javascript/RegExp" class="tip" tip="用于模式匹配的正则表达式"><span class="name">RegExp</span></a></li>
+              <li><a href="RegExp-exec().htm" tppabs="http://www.qefqei.com/javascript/RegExp-exec()" class="tip" tip="通用的匹配模式"><span class="name">RegExp.exec()</span></a></li>
+              <li><a href="RegExp-global.htm" tppabs="http://www.qefqei.com/javascript/RegExp-global" class="tip" tip="正则表达式是否全局匹配"><span class="name">RegExp.global</span></a></li>
+              <li><a href="RegExp-ignoreCase.htm" tppabs="http://www.qefqei.com/javascript/RegExp-ignoreCase" class="tip" tip="正则表达式是否区分大小写"><span class="name">RegExp.ignoreCase</span></a></li>
+              <li><a href="RegExp-lastIndex.htm" tppabs="http://www.qefqei.com/javascript/RegExp-lastIndex" class="tip" tip="下次匹配的起始位置"><span class="name">RegExp.lastIndex</span></a></li>
+              <li><a href="RegExp-source.htm" tppabs="http://www.qefqei.com/javascript/RegExp-source" class="tip" tip="正则表达式的文本"><span class="name">RegExp.source</span></a></li>
+              <li><a href="RegExp-test().htm" tppabs="http://www.qefqei.com/javascript/RegExp-test()" class="tip" tip="检测一个字符串是否匹配某个模式"><span class="name">RegExp.test()</span></a></li>
+              <li><a href="RegExp-toString().htm" tppabs="http://www.qefqei.com/javascript/RegExp-toString()" class="tip" tip="把正则表达式转换成字符串"><span class="name">RegExp.toString()</span></a></li>
+              <li><a href="Stirng-charAt().htm" tppabs="http://www.qefqei.com/javascript/Stirng-charAt()" class="tip" tip="返回字符串中的第n个字符"><span class="name">Stirng.charAt()</span></a></li>
+              <li><a href="String.htm" tppabs="http://www.qefqei.com/javascript/String" class="tip" tip="对字符串的支持"><span class="name">String</span></a></li>
+              <li><a href="String-charCodeAt().htm" tppabs="http://www.qefqei.com/javascript/String-charCodeAt()" class="tip" tip="返回字符串中的第n个字符的代码"><span class="name">String.charCodeAt()</span></a></li>
+              <li><a href="String-concat().htm" tppabs="http://www.qefqei.com/javascript/String-concat()" class="tip" tip="连接字符串"><span class="name">String.concat()</span></a></li>
+              <li><a href="String-formCharCode().htm" tppabs="http://www.qefqei.com/javascript/String-formCharCode()" class="tip" tip="从字符编码创建一个字符串"><span class="name">String.formCharCode()</span></a></li>
+              <li><a href="String-indexOf().htm" tppabs="http://www.qefqei.com/javascript/String-indexOf()" class="tip" tip="检索字符串"><span class="name">String.indexOf()</span></a></li>
+              <li><a href="String-lastIndexOf().htm" tppabs="http://www.qefqei.com/javascript/String-lastIndexOf()" class="tip" tip="从后向前检索一个字符串"><span class="name">String.lastIndexOf()</span></a></li>
+              <li><a href="String-length.htm" tppabs="http://www.qefqei.com/javascript/String-length" class="tip" tip="字符串的长度"><span class="name">String.length</span></a></li>
+              <li><a href="String-localeCompare().htm" tppabs="http://www.qefqei.com/javascript/String-localeCompare()" class="tip" tip="用本地特定顺序来比较两个字符串"><span class="name">String.localeCompare()</span></a></li>
+              <li><a href="String-match().htm" tppabs="http://www.qefqei.com/javascript/String-match()" class="tip" tip="找到一个或多个正则表达式的匹配"><span class="name">String.match()</span></a></li>
+              <li><a href="String-replace().htm" tppabs="http://www.qefqei.com/javascript/String-replace()" class="tip" tip="替换一个与正则表达式匹配的子串"><span class="name">String.replace()</span></a></li>
+              <li><a href="String-search().htm" tppabs="http://www.qefqei.com/javascript/String-search()" class="tip" tip="检索与正则表达式相匹配的子串"><span class="name">String.search()</span></a></li>
+              <li><a href="String-slice().htm" tppabs="http://www.qefqei.com/javascript/String-slice()" class="tip" tip="抽取一个子串"><span class="name">String.slice()</span></a></li>
+              <li><a href="String-split().htm" tppabs="http://www.qefqei.com/javascript/String-split()" class="tip" tip="将字符串分割成字符串数组"><span class="name">String.split()</span></a></li>
+              <li><a href="String-substr().htm" tppabs="http://www.qefqei.com/javascript/String-substr()" class="tip" tip="抽取一个子串"><span class="name">String.substr()</span></a></li>
+              <li><a href="String-substring().htm" tppabs="http://www.qefqei.com/javascript/String-substring()" class="tip" tip="返回字符串的一个子串"><span class="name">String.substring()</span></a></li>
+              <li><a href="String-toLocaleLowerCase().htm" tppabs="http://www.qefqei.com/javascript/String-toLocaleLowerCase()" class="tip" tip="把字符串转换小写"><span class="name">String.toLocaleLowerCase()</span></a></li>
+              <li><a href="String-toLocaleUpperCase().htm" tppabs="http://www.qefqei.com/javascript/String-toLocaleUpperCase()" class="tip" tip="将字符串转换成大写"><span class="name">String.toLocaleUpperCase()</span></a></li>
+              <li><a href="String-toLowerCase().htm" tppabs="http://www.qefqei.com/javascript/String-toLowerCase()" class="tip" tip="将字符串转换成小写"><span class="name">String.toLowerCase()</span></a></li>
+              <li><a href="String-toString().htm" tppabs="http://www.qefqei.com/javascript/String-toString()" class="tip" tip="返回字符串"><span class="name">String.toString()</span></a></li>
+              <li><a href="String-toUpperCase().htm" tppabs="http://www.qefqei.com/javascript/String-toUpperCase()" class="tip" tip="将字符串转换成大写"><span class="name">String.toUpperCase()</span></a></li>
+              <li><a href="String-valueOf().htm" tppabs="http://www.qefqei.com/javascript/String-valueOf()" class="tip" tip="返回字符串"><span class="name">String.valueOf()</span></a></li>
+              <li><a href="SyntaxError.htm" tppabs="http://www.qefqei.com/javascript/SyntaxError" class="tip" tip="抛出该错误用来通知语法错"><span class="name">SyntaxError</span></a></li>
+              <li><a href="TypeError.htm" tppabs="http://www.qefqei.com/javascript/TypeError" class="tip" tip="当一个值的类型错误时，抛出该异常"><span class="name">TypeError</span></a></li>
+              <li><a href="undefined.htm" tppabs="http://www.qefqei.com/javascript/undefined" class="tip" tip="未定义值"><span class="name">undefined</span></a></li>
+              <li><a href="unescape().htm" tppabs="http://www.qefqei.com/javascript/unescape()" class="tip" tip="给转义字符串解码"><span class="name">unescape()</span></a></li>
+              <li><a href="URIError.htm" tppabs="http://www.qefqei.com/javascript/URIError" class="tip" tip="由URI的编码和解码方法抛出"><span class="name">URIError</span></a></li>
+          </ul>
+        </div>
+      </div>
+      <!--<div class="rcw"><span class="rclb"></span><span class="rcrb"></span><div class="rcm"></div></div>-->
+    </div>
+    <div class="bot"><span class="lb"></span><span class="rb"></span></div>
+  </div>
+
+</div>
+
+
+      
+
+
+<div id="content">
+
+  <div class="box bluebox" id="apiContent">
+    <div class="top">
+      <span class="lt"></span>
+      <span class="tit">JavaScript API</span>
+      <span class="rt"></span>
+      <span id="apiPrint" class="print">打印</span>
+    </div>
+    <div class="con">
+      <div class="rcw"><span class="rclt"></span><span class="rcrt"></span><div class="rcm"></div></div>
+
+      <div class="content">
+
+        <div id="api-javascript" class="api-content">
+
+          <div class="nameAndEnable"><div class="name">Math.SQRT2</div><div class="enable">ECMAScript v1</div></div>
+          <div class="howAndExtend"><div class="howRead">算术常量<img src="JavaScriptCache/Math_SQRT1_2.gif" tppabs="http://www.qefqei.com/javascript/JavaScriptCache/Math_SQRT1_2.gif" width="14" height="13"></div><div class="extendFrom"></div></div>
+
+          <div class="clearer"></div>
+
+
+            <div class="field">
+              <p class="fname">摘要</p>
+              <p class="fcont">Math.SQRT2</p>
+            </div>
+
+
+
+
+
+
+
+
+
+            <div class="field">
+              <p class="fname">描述</p>
+              <p class="fcont">Math.SQRT2就是常量<img src="JavaScriptCache/Math_SQRT1_2.gif" tppabs="http://www.qefqei.com/javascript/JavaScriptCache/Math_SQRT1_2.gif" width="14" height="13">，即2的平方根。它的值近似于1.414213562373095。</p>
+            </div>
+
+
+
+
+        </div>
+
+        <div class="clearer"></div>
+
+      </div>
+      <div class="rcw"><span class="rclb"></span><span class="rcrb"></span><div class="rcm"></div></div>
+    </div>
+    <div class="bot"><span class="lb"></span><span class="rb"></span></div>
+  </div>
+
+  <div class="box bluebox">
+  <div class="top">
+    <span class="lt"></span><span class="tit">Comments</span><span class="rt"></span>
+
+  </div>
+  <div class="con">
+    <div class="rcw"><span class="rclt"></span><span class="rcrt"></span><div class="rcm"></div></div>
+    <div class="content">
+      <!-- Include the Google Friend Connect javascript library. -->
+<script type="text/javascript" src="../../www.google.com/friendconnect/script/friendconnect.js" tppabs="http://www.google.com/friendconnect/script/friendconnect.js"></script>
+<!-- Define the div tag where the gadget will be inserted. -->
+<div id="div-3141681774782429473" style="width:100%;"></div>
+<!-- Render the gadget into a div. -->
+<script type="text/javascript">
+  var skin = {};
+  skin['BORDER_COLOR'] = 'transparent';
+  skin['ENDCAP_BG_COLOR'] = 'transparent';
+  skin['ENDCAP_TEXT_COLOR'] = '#333333';
+  skin['ENDCAP_LINK_COLOR'] = '#467BB7';
+  skin['ALTERNATE_BG_COLOR'] = 'transparent';
+  skin['CONTENT_BG_COLOR'] = 'transparent';
+  skin['CONTENT_LINK_COLOR'] = '#0000cc';
+  skin['CONTENT_TEXT_COLOR'] = '#333333';
+  skin['CONTENT_SECONDARY_LINK_COLOR'] = '#7777cc';
+  skin['CONTENT_SECONDARY_TEXT_COLOR'] = '#666666';
+  skin['CONTENT_HEADLINE_COLOR'] = '#467BB7';
+  skin['DEFAULT_COMMENT_TEXT'] = '- add your comment here -';
+  skin['HEADER_TEXT'] = 'Comments';
+  skin['POSTS_PER_PAGE'] = '10';
+  google.friendconnect.container.setParentUrl('/' /* location of rpc_relay.html and canvas.html */);
+  google.friendconnect.container.renderWallGadget(
+  { id: 'div-3141681774782429473',
+    site: '17426615423514448198',
+    'view-params':{"disableMinMax":"true","scope":"SITE","allowAnonymousPost":"true","startMaximized":"true"}
+  },
+  skin);
+</script>
+    </div>
+    <div class="rcw"><span class="rclb"></span><span class="rcrb"></span><div class="rcm"></div></div>
+  </div>
+  <div class="bot"><span class="lb"></span><span class="rb"></span></div>
+</div>
+
+
+</div>
+
+        <div id="rightbar">
+
+  <div class="box greenbox">
+    <div class="top">
+      <span class="lt"></span><span class="tit">全部API</span><span class="rt"></span>
+    </div>
+    <div class="con">
+      <div class="rcw"><span class="rclt"></span><span class="rcrt"></span><div class="rcm"></div></div>
+      <div class="content">
+        <ul class="apis-menu">
+          <li></li>
+          <li></li>
+          <li></li>
+        </ul>
+      </div>
+      <div class="rcw"><span class="rclb"></span><span class="rcrb"></span><div class="rcm"></div></div>
+    </div>
+    <div class="bot"><span class="lb"></span><span class="rb"></span></div>
+
+  </div>
+
+  <div class="box greenbox">
+    <div class="top">
+      <span class="lt"></span><span class="tit">Friend Connect</span><span class="rt"></span>
+    </div>
+    <div class="con">
+      <div class="rcw"><span class="rclt"></span><span class="rcrt"></span><div class="rcm"></div></div>
+      <div class="content" style="padding-top:5px;">
+        <!-- Include the Google Friend Connect javascript library. -->
+<script type="text/javascript" src="../../www.google.com/friendconnect/script/friendconnect.js" tppabs="http://www.google.com/friendconnect/script/friendconnect.js"></script>
+<!-- Define the div tag where the gadget will be inserted. -->
+<div id="div-8311374837283539900" style="width:180px;"></div>
+<!-- Render the gadget into a div. -->
+<script type="text/javascript">
+  var skin = {};
+  skin['BORDER_COLOR'] = '#666666';
+  skin['ENDCAP_BG_COLOR'] = '#ffffff';//e0ecff
+  skin['ENDCAP_TEXT_COLOR'] = '#333333';
+  skin['ENDCAP_LINK_COLOR'] = '#47A756';
+  skin['ALTERNATE_BG_COLOR'] = '#ffffff';
+  skin['CONTENT_BG_COLOR'] = '#ffffff';
+  skin['CONTENT_LINK_COLOR'] = '#0000cc';
+  skin['CONTENT_TEXT_COLOR'] = '#333333';
+  skin['CONTENT_SECONDARY_LINK_COLOR'] = '#7777cc';
+  skin['CONTENT_SECONDARY_TEXT_COLOR'] = '#666666';
+  skin['CONTENT_HEADLINE_COLOR'] = '#333333';
+  skin['NUMBER_ROWS'] = '60';
+  google.friendconnect.container.setParentUrl('/' /* location of rpc_relay.html and canvas.html */);
+  google.friendconnect.container.renderMembersGadget({ id: 'div-8311374837283539900',site: '17426615423514448198' },skin);
+</script>
+      </div>
+      <div class="rcw"><span class="rclb"></span><span class="rcrb"></span><div class="rcm"></div></div>
+    </div>
+    <div class="bot"><span class="lb"></span><span class="rb"></span></div>
+  </div>
+
+  <div class="box greenbox">
+    <div class="top">
+      <span class="lt"></span><span class="tit">Friend Links</span><span class="rt"></span>
+    </div>
+    <div class="con">
+      <div class="rcw"><span class="rclt"></span><span class="rcrt"></span><div class="rcm"></div></div>
+      <div class="content" style="padding-top:5px;">
+        <p><a href="javascript:if(confirm('http://blog.csdn.net/hakunamatata2008  \n\n�ļ���δ�� Teleport Pro ȡ�أ���Ϊ �������·��������ʼ��ַ�����õķ�Χ��  \n\n��Ҫ�ӷ������ϴ�����'))window.location='http://blog.csdn.net/hakunamatata2008'" tppabs="http://blog.csdn.net/hakunamatata2008" target="_blank">山大王的技术Blog</a></p>
+        <p><a href="javascript:if(confirm('http://woxiangbo.javaeye.com/  \n\n�ļ���δ�� Teleport Pro ȡ�أ���Ϊ �������·��������ʼ��ַ�����õķ�Χ��  \n\n��Ҫ�ӷ������ϴ�����'))window.location='http://woxiangbo.javaeye.com/'" tppabs="http://woxiangbo.javaeye.com/" target="_blank">SBXB.java</a></p>
+      </div>
+      <div class="rcw"><span class="rclb"></span><span class="rcrb"></span><div class="rcm"></div></div>
+    </div>
+    <div class="bot"><span class="lb"></span><span class="rb"></span></div>
+  </div>
+
+  <div class="box greenbox">
+    <div class="top">
+      <span class="lt"></span><span class="tit">Google AdSense</span><span class="rt"></span>
+    </div>
+    <div class="con">
+      <div class="rcw"><span class="rclt"></span><span class="rcrt"></span><div class="rcm"></div></div>
+      <div class="content" style="padding-top:5px;">
+        <script type="text/javascript">
+  <!--
+  google_ad_client = "pub-2861645637045566";
+  /* JavaScript API 160x600, 创建于 09-11-10 */
+  google_ad_slot = "3099286964";
+  google_ad_width = 160;
+  google_ad_height = 600;
+  //-->
+</script>
+<script type="text/javascript" src="../../pagead2.googlesyndication.com/pagead/show_ads.js" tppabs="http://pagead2.googlesyndication.com/pagead/show_ads.js"></script>
+      </div>
+      <div class="rcw"><span class="rclb"></span><span class="rcrb"></span><div class="rcm"></div></div>
+    </div>
+    <div class="bot"><span class="lb"></span><span class="rb"></span></div>
+  </div>
+
+  <div class="box greenbox">
+    <div class="top">
+      <span class="lt"></span><span class="tit">W3C Validation</span><span class="rt"></span>
+    </div>
+    <div class="con">
+      <div class="rcw"><span class="rclt"></span><span class="rcrt"></span><div class="rcm"></div></div>
+      <div class="content">
+        <p>
+          <a href="javascript:if(confirm('http://jigsaw.w3.org/css-validator/check/referer  \n\n�ļ���δ�� Teleport Pro ȡ�أ���Ϊ �������·��������ʼ��ַ�����õķ�Χ��  \n\n��Ҫ�ӷ������ϴ�����'))window.location='http://jigsaw.w3.org/css-validator/check/referer'" tppabs="http://jigsaw.w3.org/css-validator/check/referer" target="_blank"><img align="middle" alt="Valid CSS!" src="../../jigsaw.w3.org/css-validator/images/vcss.gif" tppabs="http://jigsaw.w3.org/css-validator/images/vcss" /></a><a href="javascript:if(confirm('http://validator.w3.org/check?uri=referer  \n\n�ļ���δ�� Teleport Pro ȡ�أ���Ϊ �������·��������ʼ��ַ�����õķ�Χ��  \n\n��Ҫ�ӷ������ϴ�����'))window.location='http://validator.w3.org/check?uri=referer'" tppabs="http://validator.w3.org/check?uri=referer" target="_blank"><img align="middle" alt="Valid XHTML 1.0 Transitional!" src="../../www.w3.org/Icons/valid-xhtml10" tppabs="http://www.w3.org/Icons/valid-xhtml10" /></a>        </p>
+      </div>
+      <div class="rcw"><span class="rclb"></span><span class="rcrb"></span><div class="rcm"></div></div>
+    </div>
+    <div class="bot"><span class="lb"></span><span class="rb"></span></div>
+  </div>
+
+</div>
+
+
+      <div id="footer">
+        <p class="f666">
+          QefQei.com所有内容,版权所有&copy; 2008-2009 Miclle.Zheng. &nbsp;<a href="mailto:miclle.zheng@gmail.com">MailTo</a>&nbsp;建议使用IE6以上的浏览器!
+        </p>
+      </div>
+
+    </div>
+
+    
+  </body>
+</html>

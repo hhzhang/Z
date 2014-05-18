@@ -1,0 +1,10 @@
+
+/**
+ *设置API列表高度
+ */
+function setListHeight(){
+    var _wHeight = $(window).height();
+    var _cHeight = $(".api-content").height();
+    var apiListWrap = $(".apiListWrap");
+    apiListWrap.height(_wHeight > _cHeight ? _wHeight - 150 : _cHeight - 32);
+}
