@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <% include includes/head.html %>
+</head>
+ <body>
+    <% include includes/header.html %>
+    <div class="container-fluid user-main">
+        <div class="row">
+            <!---------- sidebar begin ---------->
+            <div class="col-md-3 sidebar ">
+                <div class="container-fluid">
+                    <form>
+                        <input type="text" id="autocomplete" class="form-control" placeholder="Search..." >
+                    </form>
+                </div>
+                <% include includes/tree/tree.html %>
+            </div>
+            <!---------- sidebar end ---------->
+            <div id="main" class="col-md-9">
+                <!---------- Nav tabs begin ---------->
+                <ul id="tab" class="nav nav-tabs">
+                    <li class="active">
+                        <a href="#api" data-toggle="tab">API文档</a>
+                    </li>
+                    <li>
+                        <a href="#example" data-toggle="tab">示例</a>
+                    </li>
+                    <li>
+                        <a href="#resource" data-toggle="tab">源代码</a>
+                    </li>
+                </ul>
+                <div class="tab-content">
+                    <!------ API DIV ------>
+                    <div class="tab-pane fade in active" id="api">
+                    </div>
+                    <!------ EXAMPLE DIV------>
+                    <div class="tab-pane fade" id="example">
+                        <iframe id="apiFrame"></iframe>
+                        <% include includes/main/codeEditor.html %>
+                    </div>
+                    <!------ RESOURCE DIV ------>
+                    <div class="tab-pane fade" id="resource">
+                        <% include includes/main/resourceCode.html %>
+                    </div>
+                </div>
+                <!---------- Nav tabs end ---------->
+            </div>
+            <div id="welcome" style="display: none" class="col-sm-9">
+                <% include includes/welcome/welcome.html %>
+            </div>
+        </div>
+    </div>
+    <% include includes/footer.html %>
+</body>
+</html>

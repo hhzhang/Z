@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Jockjs APi</title>
+    <!--bootstrap css-->
+    <link href="/bootstrap/css/bootstrap.css" rel="stylesheet">
+    <!-- jockjs js -->
+    <script src="http://jockjs.release.dev.aifcdn.com/ujs/base/dom.dom/dom.query/ajax/event/ui.panel/ui.autocomplete/ui.exposure/cookie/site/utils.base/3cb29036793df4a9dda5432bf30bc448.js"></script>
+    <style>
+        .user-fluid{
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+        }
+        .user-jumbotron{
+            padding: 30px;
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid user-fluid" id="demoWrap">
+        <style id="demoCss">
+            <%=data.css%>
+        </style>
+        <div class="jumbotron user-jumbotron" id="demoHtml">
+            <%=data.html%>
+        </div>
+        <script type="text/javascript" id="demoJs">
+            <%=data.js%>
+        </script>
+    </div>
+</body>
+</html>
+
+
+
+
+
+
+
+
+

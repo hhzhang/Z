@@ -1,0 +1,28 @@
+
+<ul class="nav nav-pills nav-stacked nav-tree" id="myTree"  data-toggle="nav-tree">
+    <%  function tree(id,list){ %>
+    <%  if((list instanceof Array && list.length ===0) || !(list instanceof Array)) return ''; %>
+    <%      var str = '', len = list.length; %>
+    <%      for(var i= 0; i< len; i++){ %>
+    <%          if(list[i].pId === id){ %>
+                    <li>
+                        <a href="#<%= list[i].name %>" >
+                            <%= list[i].name %>
+                        </a>
+                        <% for(var j in list){ %>
+                            <% if(list[j].pId==list[i].id && list[j].name!==list[i].name ){%>
+                                <ul class="nav nav-pills nav-stacked nav-tree">
+                                    <% tree(list[i].id,list) %>
+                                </ul>
+                                <% break;%>
+                            <% }%>
+                        <% }%>
+                    </li>
+    <%          }else{ %>
+    <%              if(i=== (len-1))return ''; //没有会报错，无语%>
+    <%          }%>
+    <%      } %>
+    <%  }%>
+
+    <% tree(0,list) %>
+</ul>

@@ -1,0 +1,35 @@
+<div id="apiTemp" class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title"><%=name%></h3>
+    </div>
+    <div class="panel-body">
+        <h4>描述：</h4>
+        <p><%=describtion%></p>
+        <h4>参数：</h4>
+        <table class="table table-bordered ">
+            <thead>
+            <tr>
+                <th>参数名</th>
+                <th>类型</th>
+                <th>描述</th>
+            </tr>
+            </thead>
+            <tbody>
+            <% for(var i in parameter){ %>
+            <tr>
+                <td><%= parameter[i].name%></td>
+                <td><%= parameter[i].type%></td>
+                <td><%= parameter[i].describtion%></td>
+            </tr>
+            <% } %>
+            </tbody>
+        </table>
+        <h4>返回值：</h4>
+        <p></p>
+        <h4>用法：</h4>
+
+    </div>
+</div>
+<div id="apiTempTip" class="panel panel-default" style="display: none">
+    抱歉，没有找对对应的api说明。
+</div>
