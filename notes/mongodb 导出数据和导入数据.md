@@ -1,4 +1,8 @@
+
+
 # mongodb 导出数据和导入数据
+
+=============
 
 ## mongoexport
 ### 参数说明：
@@ -55,3 +59,7 @@ mongoimport -d test -c students --type csv --headerline --file students_csv.dat
 -headerline:指明第一行是列名，不需要导入
 
 -file：指明要导入的文件
+
+-------------
+
+zhh 2014.8.26
